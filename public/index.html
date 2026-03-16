@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Oldal Generátor · Claude AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0d0f14;
+    --surface: #161920;
+    --surface2: #1e2230;
+    --border: #2a2f42;
+    --accent: #c9a96e;
+    --accent2: #e8c98a;
+    --text: #f0ede8;
+    --muted: #8b8fa8;
+    --green: #4caf82;
+    --red: #e07070;
+    --orange: #e09050;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(201,169,110,0.06) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 70%, rgba(76,175,130,0.04) 0%, transparent 50%);
+    animation: bgPulse 8s ease-in-out infinite alternate;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes bgPulse {
+    from { transform: scale(1); }
+    to   { transform: scale(1.05) rotate(1deg); }
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 48px 24px;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+    animation: fadeDown 0.7s ease both;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(201,169,110,0.12);
+    border: 1px solid rgba(201,169,110,0.25);
+    border-radius: 100px;
+    padding: 6px 16px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .badge-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    animation: blink 2s ease infinite;
+  }
+
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(26px, 5vw, 40px);
+    font-weight: 900;
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+
+  h1 span {
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .subtitle { color: var(--muted); font-size: 15px; line-height: 1.6; }
+
+  /* Rate limit display */
+  .rate-bar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    animation: fadeUp 0.5s 0.1s ease both;
+  }
+
+  .rate-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+
+  .rate-dots {
+    display: flex;
+    gap: 6px;
+  }
+
+  .rate-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    background: var(--green);
+    transition: background 0.3s;
+  }
+
+  .rate-dot.used { background: var(--border); }
+
+  .rate-label { font-size: 12px; color: var(--muted); }
+  .rate-label strong { color: var(--text); }
+
+  /* Form card */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 28px;
+    margin-bottom: 24px;
+    animation: fadeUp 0.6s 0.15s ease both;
+  }
+
+  .card-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+
+  @media (max-width: 580px) { .form-grid { grid-template-columns: 1fr; } }
+
+  .form-group { display: flex; flex-direction: column; gap: 7px; }
+  .form-group.full { grid-column: 1 / -1; }
+
+  label { font-size: 13px; font-weight: 500; color: var(--text); }
+  label .hint { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 4px; }
+
+  input[type="text"], textarea, select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    resize: vertical;
+  }
+
+  input:focus, textarea:focus, select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(201,169,110,0.1);
+  }
+
+  input::placeholder, textarea::placeholder { color: var(--muted); }
+  select option { background: var(--surface2); }
+  textarea { min-height: 76px; }
+
+  /* Generate button */
+  .btn-generate {
+    width: 100%;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 12px;
+    padding: 16px 32px;
+    color: #0d0f14;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+    animation: fadeUp 0.6s 0.25s ease both;
+  }
+
+  .btn-generate::before {
+    content: '';
+    position: absolute;
+    top: 0; left: -100%;
+    width: 100%; height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+    transition: left 0.5s;
+  }
+
+  .btn-generate:hover:not(:disabled)::before { left: 100%; }
+  .btn-generate:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,169,110,0.3); }
+  .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  /* Loading */
+  .loading {
+    display: none;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 44px 28px;
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .loading.active { display: block; }
+
+  .spinner {
+    width: 44px; height: 44px;
+    border: 3px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    margin: 0 auto 20px;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .loading-text { color: var(--muted); font-size: 15px; margin-bottom: 24px; }
+
+  .steps { display: flex; flex-direction: column; gap: 10px; max-width: 300px; margin: 0 auto; text-align: left; }
+
+  .step {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: var(--muted);
+    transition: color 0.3s;
+  }
+  .step.active { color: var(--accent); }
+  .step.done  { color: var(--green); }
+
+  .step-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--border); flex-shrink: 0;
+    transition: background 0.3s;
+  }
+  .step.active .step-dot { background: var(--accent); animation: blink 1s ease infinite; }
+  .step.done  .step-dot { background: var(--green); }
+
+  /* Result */
+  .result { display: none; animation: fadeUp 0.5s ease both; }
+  .result.active { display: block; }
+
+  .result-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .result-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 20px; font-weight: 700;
+  }
+
+  .result-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .btn-sm {
+    border-radius: 8px; padding: 8px 15px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer; border: none;
+    transition: all 0.2s;
+  }
+
+  .btn-copy { background: rgba(201,169,110,0.15); border: 1px solid rgba(201,169,110,0.3); color: var(--accent); }
+  .btn-copy:hover { background: rgba(201,169,110,0.25); }
+  .btn-copy.ok { background: rgba(76,175,130,0.15); border-color: rgba(76,175,130,0.3); color: var(--green); }
+
+  .btn-preview { background: rgba(76,175,130,0.12); border: 1px solid rgba(76,175,130,0.25); color: var(--green); }
+  .btn-preview:hover { background: rgba(76,175,130,0.22); }
+
+  .btn-reset { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
+  .btn-reset:hover { color: var(--text); border-color: var(--muted); }
+
+  .code-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+
+  .code-bar {
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    padding: 11px 16px;
+    display: flex; align-items: center; gap: 7px;
+  }
+
+  .dot { width: 11px; height: 11px; border-radius: 50%; }
+  .dr { background: #ff5f57; } .dy { background: #ffbd2e; } .dg { background: #28ca42; }
+  .code-lang { margin-left: auto; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  .code-pre {
+    padding: 18px;
+    font-family: 'Courier New', monospace;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: #a8c4e0;
+    max-height: 380px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  .code-pre::-webkit-scrollbar { width: 5px; }
+  .code-pre::-webkit-scrollbar-track { background: transparent; }
+  .code-pre::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* Preview */
+  .preview-wrap { display: none; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 16px; }
+  .preview-wrap.active { display: block; }
+  .preview-bar { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 10px 16px; font-size: 12px; color: var(--muted); }
+  iframe { width: 100%; height: 580px; border: none; background: white; }
+
+  /* Error / Rate limit banner */
+  .alert {
+    border-radius: 12px; padding: 16px 18px;
+    font-size: 14px; line-height: 1.6;
+    margin-bottom: 20px; display: none;
+  }
+  .alert.active { display: block; }
+  .alert.error { background: rgba(224,112,112,0.1); border: 1px solid rgba(224,112,112,0.25); color: var(--red); }
+  .alert.warning { background: rgba(224,144,80,0.1); border: 1px solid rgba(224,144,80,0.25); color: var(--orange); }
+
+  /* Countdown */
+  .countdown { font-weight: 700; font-size: 15px; }
+
+  @keyframes fadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeUp   { from{opacity:0;transform:translateY(18px)}  to{opacity:1;transform:translateY(0)} }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="badge"><div class="badge-dot"></div>Claude AI · Ingyenes Sales Builder</div>
+    <h1>Sales Oldal <span>Generátor</span></h1>
+    <p class="subtitle">Írd le az ajánlatodat — Claude elkészíti a teljes HTML sales oldaladat.<br>Napi 3 generálás ingyenes, API kulcs nem szükséges.</p>
+  </div>
+
+  <!-- Rate limit bar -->
+  <div class="rate-bar" id="rateBar">
+    <div class="rate-info">
+      <div class="rate-dots" id="rateDots">
+        <div class="rate-dot" id="rd0"></div>
+        <div class="rate-dot" id="rd1"></div>
+        <div class="rate-dot" id="rd2"></div>
+      </div>
+      <span class="rate-label">Napi generálás: <strong id="rateText">3 / 3 maradt</strong></span>
+    </div>
+    <span style="font-size:12px; color:var(--muted)">Resetel 24 óránként 🔄</span>
+  </div>
+
+  <!-- Alert box -->
+  <div class="alert" id="alertBox"></div>
+
+  <!-- Form -->
+  <div class="card">
+    <div class="card-title">📋 Termék / Ajánlat Adatai</div>
+    <div class="form-grid">
+
+      <div class="form-group full">
+        <label>Termék / Szolgáltatás neve <span class="hint">(kötelező)</span></label>
+        <input type="text" id="productName" placeholder="pl. 7 Napos Ügyfélszerző Rendszer">
+      </div>
+
+      <div class="form-group full">
+        <label>Célcsoport</label>
+        <input type="text" id="targetAudience" placeholder="pl. Magyar nőknek, akik online vállalkozást építenek">
+      </div>
+
+      <div class="form-group full">
+        <label>Fő ígéret / Eredmény</label>
+        <textarea id="mainPromise" placeholder="pl. 7 nap alatt felépítesz egy automatizált rendszert, ami alvás közben is hoz ügyfeleket"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Fájdalompontok <span class="hint">(vesszővel)</span></label>
+        <textarea id="painPoints" placeholder="pl. Nincs elég ügyfél, Fárasztó a hideg megkeresés"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Előnyök / Mit kap a vásárló</label>
+        <textarea id="benefits" placeholder="pl. Kész email sablonok, Live coaching, Életen át hozzáférés"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Ár</label>
+        <input type="text" id="price" placeholder="pl. 49.000 Ft">
+      </div>
+
+      <div class="form-group">
+        <label>CTA gomb szövege</label>
+        <input type="text" id="ctaText" placeholder="pl. Belépek a programba →">
+      </div>
+
+      <div class="form-group">
+        <label>Dizájn stílus</label>
+        <select id="designStyle">
+          <option value="modern-dark">Modern Dark (erdőzöld + arany)</option>
+          <option value="elegant-light">Elegáns Light (krém + terrakotta)</option>
+          <option value="bold-contrast">Bold Contrast (fekete + neonzöld)</option>
+          <option value="luxury-gold">Luxury Gold (mélykék + arany)</option>
+          <option value="minimal-white">Minimal White (fehér + grafit)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Sales oldal típusa</label>
+        <select id="pageType">
+          <option value="long-form">Long-form (teljes sales oldal)</option>
+          <option value="short-form">Short-form (VSL stílusú)</option>
+          <option value="webinar">Webinar regisztrációs oldal</option>
+          <option value="lead-magnet">Lead magnet letöltő oldal</option>
+        </select>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Generate button -->
+  <button class="btn-generate" id="genBtn" onclick="generate()">
+    ✨ Sales Oldal Generálása — Ingyenes
+  </button>
+
+  <!-- Loading -->
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <div class="loading-text">Claude megírja a sales oldaladat...</div>
+    <div class="steps">
+      <div class="step" id="s1"><div class="step-dot"></div>Ajánlat elemzése</div>
+      <div class="step" id="s2"><div class="step-dot"></div>Headline és hook megírása</div>
+      <div class="step" id="s3"><div class="step-dot"></div>Sales copy generálása</div>
+      <div class="step" id="s4"><div class="step-dot"></div>HTML és dizájn összeállítása</div>
+      <div class="step" id="s5"><div class="step-dot"></div>Végső simítások</div>
+    </div>
+  </div>
+
+  <!-- Result -->
+  <div class="result" id="result">
+    <div class="result-header">
+      <div class="result-title">✅ Kész a Sales Oldalad!</div>
+      <div class="result-actions">
+        <button class="btn-sm btn-copy" id="copyBtn" onclick="copyCode()">📋 Kód másolása</button>
+        <button class="btn-sm btn-preview" onclick="togglePreview()">👁 Előnézet</button>
+        <button class="btn-sm btn-reset" onclick="reset()">↩ Újra</button>
+      </div>
+    </div>
+
+    <div class="code-box">
+      <div class="code-bar">
+        <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
+        <div class="code-lang">HTML</div>
+      </div>
+      <pre class="code-pre" id="codeOut"></pre>
+    </div>
+
+    <div class="preview-wrap" id="previewWrap">
+      <div class="preview-bar">👁 Élő előnézet</div>
+      <iframe id="previewFrame"></iframe>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ← Ezt az URL-t cseréld le a saját Netlify URL-edre deploy után
+  const API_URL = '/.netlify/functions/generate';
+
+  const LIMIT = 3;
+  let generatedHtml = '';
+  let stepTimer = null;
+
+  // Rate limit tracking (localStorage-ban)
+  function getRateData() {
+    const dayMs = 24 * 60 * 60 * 1000;
+    let data = JSON.parse(localStorage.getItem('rl') || '{}');
+    if (!data.resetAt || Date.now() - data.resetAt > dayMs) {
+      data = { count: 0, resetAt: Date.now() };
+      localStorage.setItem('rl', JSON.stringify(data));
+    }
+    return data;
+  }
+
+  function useCredit() {
+    const data = getRateData();
+    data.count += 1;
+    localStorage.setItem('rl', JSON.stringify(data));
+    updateRateUI(LIMIT - data.count);
+  }
+
+  function updateRateUI(remaining) {
+    document.getElementById('rateText').textContent = `${remaining} / ${LIMIT} maradt`;
+    for (let i = 0; i < LIMIT; i++) {
+      const dot = document.getElementById('rd' + i);
+      if (dot) dot.classList.toggle('used', i >= remaining);
+    }
+  }
+
+  function getResetCountdown() {
+    const data = getRateData();
+    const resetInMs = (data.resetAt + 24 * 60 * 60 * 1000) - Date.now();
+    const h = Math.floor(resetInMs / 3600000);
+    const m = Math.ceil((resetInMs % 3600000) / 60000);
+    return `${h} óra ${m} perc`;
+  }
+
+  // Init
+  (function init() {
+    const data = getRateData();
+    updateRateUI(LIMIT - data.count);
+  })();
+
+  // Step animation
+  function startSteps() {
+    const ids = ['s1','s2','s3','s4','s5'];
+    let i = 0;
+    stepTimer = setInterval(() => {
+      if (i > 0) document.getElementById(ids[i-1]).className = 'step done';
+      if (i < ids.length) {
+        document.getElementById(ids[i]).className = 'step active';
+        i++;
+      }
+    }, 1700);
+  }
+
+  function clearSteps() {
+    clearInterval(stepTimer);
+    ['s1','s2','s3','s4','s5'].forEach(id => document.getElementById(id).className = 'step');
+  }
+
+  function showAlert(msg, type) {
+    const el = document.getElementById('alertBox');
+    el.className = `alert ${type} active`;
+    el.innerHTML = msg;
+  }
+
+  function hideAlert() {
+    document.getElementById('alertBox').className = 'alert';
+  }
+
+  async function generate() {
+    // Client-side rate check
+    const data = getRateData();
+    const remaining = LIMIT - data.count;
+    if (remaining <= 0) {
+      showAlert(`⏳ <strong>Napi limit elérve!</strong> Ma már nem tudsz több oldalt generálni. Próbáld újra <span class="countdown">${getResetCountdown()}</span> múlva.`, 'warning');
+      return;
+    }
+
+    const productName = document.getElementById('productName').value.trim();
+    if (!productName) { alert('Add meg a termék nevét!'); return; }
+
+    const targetAudience = document.getElementById('targetAudience').value.trim();
+    const mainPromise    = document.getElementById('mainPromise').value.trim();
+    const painPoints     = document.getElementById('painPoints').value.trim();
+    const benefits       = document.getElementById('benefits').value.trim();
+    const price          = document.getElementById('price').value.trim();
+    const ctaText        = document.getElementById('ctaText').value.trim() || 'Kérem a hozzáférést →';
+    const designStyle    = document.getElementById('designStyle').value;
+    const pageType       = document.getElementById('pageType').value;
+
+    const designs = {
+      'modern-dark':    'sötét háttér (#0d1a14), erdőzöld (#2d6a4f) és arany (#c9a96e) akcentusok, Playfair Display + DM Sans betűtípusok',
+      'elegant-light':  'krémfehér háttér (#faf7f2), terrakotta (#c4704f) és halvány arany, elegáns serif betűtípusok',
+      'bold-contrast':  'fekete háttér (#0a0a0a), élénk neonzöld (#00ff87) akcentusok, erős kontrasztok, modern sans-serif',
+      'luxury-gold':    'mélykék (#0a1628) háttér, arany (#d4a843) és krémfehér, luxus érzet, elegáns tipográfia',
+      'minimal-white':  'fehér háttér, grafit (#1a1a2e) szöveg, minimális dizájn, sok whitespace, clean sans-serif',
+    };
+
+    const pageTypes = {
+      'long-form':    'hosszú sales oldal (hero, fájdalompontok, megoldás, features, testimonials, garancia, CTA, FAQ)',
+      'short-form':   'rövid VSL stílusú oldal (headline, sub, video placeholder, bullet points, CTA)',
+      'webinar':      'webinar regisztrációs oldal (dátum/idő, előadó bemutatkozás, regisztrációs form)',
+      'lead-magnet':  'lead magnet letöltő oldal (ajánlat, mit kap, rövid form)',
+    };
+
+    const systemPrompt = `Te egy profi magyar sales oldal designer és copywriter vagy.
+HTML sales oldalakat készítesz egyetlen önálló HTML fájlként, inline CSS-sel és JS-sel.
+Szabályok:
+- Minden szöveg magyarul legyen
+- Teljes, önálló, production-ready HTML
+- Google Fonts CDN-ből
+- Scroll reveal animációk (IntersectionObserver), hover effektek
+- Mobilbarát, reszponzív
+- Nincs külső CSS framework
+- CSAK a HTML kódot add vissza, semmi markdown blokk, semmi magyarázat`;
+
+    const userPrompt = `Készíts egy ${pageTypes[pageType]} az alábbi adatok alapján:
+
+TERMÉK: ${productName}
+CÉLCSOPORT: ${targetAudience || 'Magyar vállalkozók'}
+FŐ ÍGÉRET: ${mainPromise || 'Gyors és hatékony megoldás'}
+FÁJDALOMPONTOK: ${painPoints || 'Nem specifikált'}
+ELŐNYÖK: ${benefits || 'Nem specifikált'}
+ÁR: ${price || 'Kérésre megadható'}
+CTA SZÖVEG: ${ctaText}
+DIZÁJN: ${designs[designStyle]}
+
+Adj hozzá: sticky header, scroll animációk, kitalált de hihető testimonialok, garancia szekció. Sales copy legyen persuasive, magyar piaci hangvételű.
+
+CSAK a teljes HTML kódot add vissza.`;
+
+    // UI: start loading
+    hideAlert();
+    document.getElementById('genBtn').disabled = true;
+    document.getElementById('result').classList.remove('active');
+    document.getElementById('loading').classList.add('active');
+    clearSteps();
+    startSteps();
+
+    try {
+      const res = await fetch(API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ systemPrompt, userPrompt }),
+      });
+
+      const json = await res.json();
+
+      if (res.status === 429) {
+        showAlert(`⏳ <strong>Szerver oldali limit elérve.</strong> ${json.message}`, 'warning');
+        return;
+      }
+
+      if (!res.ok) throw new Error(json.error || 'Ismeretlen hiba');
+
+      generatedHtml = json.html;
+      useCredit(); // csak sikeres generálásnál
+
+      clearSteps();
+      ['s1','s2','s3','s4','s5'].forEach(id => document.getElementById(id).className = 'step done');
+
+      setTimeout(() => {
+        document.getElementById('loading').classList.remove('active');
+        document.getElementById('codeOut').textContent = generatedHtml;
+        document.getElementById('result').classList.add('active');
+        document.getElementById('genBtn').disabled = false;
+      }, 500);
+
+    } catch (err) {
+      clearSteps();
+      document.getElementById('loading').classList.remove('active');
+      document.getElementById('genBtn').disabled = false;
+      showAlert('❌ Hiba történt: ' + err.message, 'error');
+    }
+  }
+
+  function copyCode() {
+    navigator.clipboard.writeText(generatedHtml).then(() => {
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✅ Másolva!';
+      btn.classList.add('ok');
+      setTimeout(() => {
+        btn.textContent = '📋 Kód másolása';
+        btn.classList.remove('ok');
+      }, 2500);
+    });
+  }
+
+  function togglePreview() {
+    const wrap = document.getElementById('previewWrap');
+    const iframe = document.getElementById('previewFrame');
+    if (wrap.classList.toggle('active')) {
+      const blob = new Blob([generatedHtml], { type: 'text/html' });
+      iframe.src = URL.createObjectURL(blob);
+      wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+      iframe.src = '';
+    }
+  }
+
+  function reset() {
+    document.getElementById('result').classList.remove('active');
+    document.getElementById('previewWrap').classList.remove('active');
+    generatedHtml = '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+</script>
+</body>
+</html>
