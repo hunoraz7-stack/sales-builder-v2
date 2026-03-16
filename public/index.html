@@ -502,15 +502,28 @@ async function sendMessage() {
       }),
     });
 
-    const data = await res.json();
+    const rawText = await res.text();
     removeLoadingMessage();
+
+    let data;
+    try {
+      data = JSON.parse(rawText);
+    } catch(e) {
+      addMessage('assistant', '❌ Szerver hiba - kérlek próbáld újra');
+      console.error('Raw response:', rawText.substring(0, 500));
+      return;
+    }
 
     if (!res.ok) {
       addMessage('assistant', '❌ Hiba: ' + (data.error || 'Ismeretlen hiba'));
       return;
     }
 
-    const reply = data.content[0].text;
+    const reply = data?.content?.[0]?.text;
+    if (!reply) {
+      addMessage('assistant', '❌ Üres válasz érkezett - kérlek próbáld újra');
+      return;
+    }
     conversationHistory.push({ role: 'assistant', content: reply });
 
     // HTML-t tartalmaz?
