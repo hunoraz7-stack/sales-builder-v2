@@ -6,496 +6,344 @@
 <title>Sales Oldal Generátor · Claude AI</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root {
-    --bg: #0d0f14;
-    --surface: #161920;
-    --surface2: #1e2230;
-    --border: #2a2f42;
-    --accent: #c9a96e;
-    --accent2: #e8c98a;
-    --text: #f0ede8;
-    --muted: #8b8fa8;
-    --green: #4caf82;
-    --red: #e07070;
-    --orange: #e09050;
-  }
+:root {
+  --bg: #0d0f14;
+  --surface: #161920;
+  --surface2: #1e2230;
+  --border: #2a2f42;
+  --accent: #c9a96e;
+  --accent2: #e8c98a;
+  --text: #f0ede8;
+  --muted: #8b8fa8;
+  --green: #4caf82;
+  --red: #e07070;
+}
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-  body::before {
-    content: '';
-    position: fixed;
-    top: -50%; left: -50%;
-    width: 200%; height: 200%;
-    background:
-      radial-gradient(ellipse at 20% 30%, rgba(201,169,110,0.06) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 70%, rgba(76,175,130,0.04) 0%, transparent 50%);
-    animation: bgPulse 8s ease-in-out infinite alternate;
-    pointer-events: none;
-    z-index: 0;
-  }
+/* HEADER */
+.header {
+  text-align: center;
+  padding: 32px 24px 24px;
+  border-bottom: 1px solid var(--border);
+}
 
-  @keyframes bgPulse {
-    from { transform: scale(1); }
-    to   { transform: scale(1.05) rotate(1deg); }
-  }
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: rgba(201,169,110,0.12);
+  border: 1px solid rgba(201,169,110,0.25);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
 
-  .container {
-    position: relative;
-    z-index: 1;
-    max-width: 780px;
-    margin: 0 auto;
-    padding: 48px 24px;
-  }
+.badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); animation: blink 2s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 
-  /* Header */
-  .header {
-    text-align: center;
-    margin-bottom: 40px;
-    animation: fadeDown 0.7s ease both;
-  }
+h1 { font-family: 'Playfair Display', serif; font-size: clamp(22px, 4vw, 34px); font-weight: 900; }
+h1 span { background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+.subtitle { color: var(--muted); font-size: 14px; margin-top: 8px; }
 
-  .badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(201,169,110,0.12);
-    border: 1px solid rgba(201,169,110,0.25);
-    border-radius: 100px;
-    padding: 6px 16px;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }
+/* MAIN LAYOUT */
+.main {
+  display: flex;
+  flex: 1;
+  height: calc(100vh - 130px);
+}
 
-  .badge-dot {
-    width: 6px; height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    animation: blink 2s ease infinite;
-  }
+/* LEFT: CHAT */
+.chat-panel {
+  width: 420px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid var(--border);
+}
 
-  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
 
-  h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: clamp(26px, 5vw, 40px);
-    font-weight: 900;
-    line-height: 1.15;
-    margin-bottom: 12px;
-  }
+.chat-messages::-webkit-scrollbar { width: 4px; }
+.chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
 
-  h1 span {
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
+.msg {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-width: 90%;
+}
 
-  .subtitle { color: var(--muted); font-size: 15px; line-height: 1.6; }
+.msg.user { align-self: flex-end; align-items: flex-end; }
+.msg.assistant { align-self: flex-start; }
 
-  /* Rate limit display */
-  .rate-bar {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 16px 20px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 12px;
-    animation: fadeUp 0.5s 0.1s ease both;
-  }
+.msg-label { font-size: 11px; color: var(--muted); font-weight: 500; }
 
-  .rate-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 13px;
-    color: var(--muted);
-  }
+.msg-bubble {
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.6;
+}
 
-  .rate-dots {
-    display: flex;
-    gap: 6px;
-  }
+.msg.user .msg-bubble {
+  background: linear-gradient(135deg, rgba(201,169,110,0.2), rgba(232,201,138,0.15));
+  border: 1px solid rgba(201,169,110,0.3);
+  color: var(--text);
+  border-bottom-right-radius: 4px;
+}
 
-  .rate-dot {
-    width: 10px; height: 10px;
-    border-radius: 50%;
-    background: var(--green);
-    transition: background 0.3s;
-  }
+.msg.assistant .msg-bubble {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 4px;
+}
 
-  .rate-dot.used { background: var(--border); }
+.msg.assistant .msg-bubble.generating {
+  color: var(--accent);
+  font-style: italic;
+}
 
-  .rate-label { font-size: 12px; color: var(--muted); }
-  .rate-label strong { color: var(--text); }
+.msg-bubble .html-ready {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(76,175,130,0.15);
+  border: 1px solid rgba(76,175,130,0.3);
+  color: var(--green);
+  border-radius: 8px;
+  padding: 6px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
 
-  /* Form card */
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 28px;
-    margin-bottom: 24px;
-    animation: fadeUp 0.6s 0.15s ease both;
-  }
+.msg-bubble .html-ready:hover { background: rgba(76,175,130,0.25); }
 
-  .card-title {
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-    color: var(--accent);
-    margin-bottom: 20px;
-  }
+/* CHAT INPUT */
+.chat-input-area {
+  border-top: 1px solid var(--border);
+  padding: 16px;
+}
 
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-  }
+.starter-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
 
-  @media (max-width: 580px) { .form-grid { grid-template-columns: 1fr; } }
+.starter-btn {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 6px 12px;
+  color: var(--muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'DM Sans', sans-serif;
+}
 
-  .form-group { display: flex; flex-direction: column; gap: 7px; }
-  .form-group.full { grid-column: 1 / -1; }
+.starter-btn:hover { color: var(--text); border-color: var(--accent); }
 
-  label { font-size: 13px; font-weight: 500; color: var(--text); }
-  label .hint { font-weight: 400; color: var(--muted); font-size: 12px; margin-left: 4px; }
+.input-row {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+}
 
-  input[type="text"], textarea, select {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 11px 14px;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    resize: vertical;
-  }
+.chat-textarea {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 12px 14px;
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  resize: none;
+  outline: none;
+  min-height: 48px;
+  max-height: 120px;
+  transition: border-color 0.2s;
+}
 
-  input:focus, textarea:focus, select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(201,169,110,0.1);
-  }
+.chat-textarea:focus { border-color: var(--accent); }
+.chat-textarea::placeholder { color: var(--muted); }
 
-  input::placeholder, textarea::placeholder { color: var(--muted); }
-  select option { background: var(--surface2); }
-  textarea { min-height: 76px; }
+.send-btn {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  transition: transform 0.2s, box-shadow 0.2s;
+  flex-shrink: 0;
+}
 
-  /* Generate button */
-  .btn-generate {
-    width: 100%;
-    background: linear-gradient(135deg, var(--accent), var(--accent2));
-    border: none;
-    border-radius: 12px;
-    padding: 16px 32px;
-    color: #0d0f14;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
-    animation: fadeUp 0.6s 0.25s ease both;
-  }
+.send-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(201,169,110,0.3); }
+.send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
-  .btn-generate::before {
-    content: '';
-    position: absolute;
-    top: 0; left: -100%;
-    width: 100%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-    transition: left 0.5s;
-  }
+/* RIGHT: PREVIEW */
+.preview-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
 
-  .btn-generate:hover:not(:disabled)::before { left: 100%; }
-  .btn-generate:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(201,169,110,0.3); }
-  .btn-generate:disabled { opacity: 0.45; cursor: not-allowed; }
+.preview-topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
 
-  /* Loading */
-  .loading {
-    display: none;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 44px 28px;
-    text-align: center;
-    margin-bottom: 24px;
-  }
-  .loading.active { display: block; }
+.preview-title { font-size: 13px; font-weight: 600; color: var(--muted); }
 
-  .spinner {
-    width: 44px; height: 44px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    margin: 0 auto 20px;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
+.preview-actions { display: flex; gap: 8px; }
 
-  .loading-text { color: var(--muted); font-size: 15px; margin-bottom: 24px; }
+.btn-copy-html, .btn-clear {
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s;
+}
 
-  .steps { display: flex; flex-direction: column; gap: 10px; max-width: 300px; margin: 0 auto; text-align: left; }
+.btn-copy-html {
+  background: rgba(201,169,110,0.15);
+  border: 1px solid rgba(201,169,110,0.3);
+  color: var(--accent);
+}
+.btn-copy-html:hover { background: rgba(201,169,110,0.25); }
+.btn-copy-html.ok { background: rgba(76,175,130,0.15); border-color: rgba(76,175,130,0.3); color: var(--green); }
 
-  .step {
-    display: flex; align-items: center; gap: 10px;
-    font-size: 13px; color: var(--muted);
-    transition: color 0.3s;
-  }
-  .step.active { color: var(--accent); }
-  .step.done  { color: var(--green); }
+.btn-clear {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.btn-clear:hover { color: var(--text); }
 
-  .step-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: var(--border); flex-shrink: 0;
-    transition: background 0.3s;
-  }
-  .step.active .step-dot { background: var(--accent); animation: blink 1s ease infinite; }
-  .step.done  .step-dot { background: var(--green); }
+.preview-iframe-wrap {
+  flex: 1;
+  position: relative;
+}
 
-  /* Result */
-  .result { display: none; animation: fadeUp 0.5s ease both; }
-  .result.active { display: block; }
+.preview-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  gap: 12px;
+  font-size: 14px;
+}
 
-  .result-header {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap; gap: 12px;
-    margin-bottom: 18px;
-  }
+.preview-placeholder-icon { font-size: 48px; opacity: 0.4; }
 
-  .result-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 20px; font-weight: 700;
-  }
+iframe#previewFrame {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: white;
+  display: none;
+}
 
-  .result-actions { display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .btn-sm {
-    border-radius: 8px; padding: 8px 15px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px; font-weight: 600;
-    cursor: pointer; border: none;
-    transition: all 0.2s;
-  }
-
-  .btn-copy { background: rgba(201,169,110,0.15); border: 1px solid rgba(201,169,110,0.3); color: var(--accent); }
-  .btn-copy:hover { background: rgba(201,169,110,0.25); }
-  .btn-copy.ok { background: rgba(76,175,130,0.15); border-color: rgba(76,175,130,0.3); color: var(--green); }
-
-  .btn-preview { background: rgba(76,175,130,0.12); border: 1px solid rgba(76,175,130,0.25); color: var(--green); }
-  .btn-preview:hover { background: rgba(76,175,130,0.22); }
-
-  .btn-reset { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); }
-  .btn-reset:hover { color: var(--text); border-color: var(--muted); }
-
-  .code-box {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    overflow: hidden;
-    margin-bottom: 16px;
-  }
-
-  .code-bar {
-    background: var(--surface2);
-    border-bottom: 1px solid var(--border);
-    padding: 11px 16px;
-    display: flex; align-items: center; gap: 7px;
-  }
-
-  .dot { width: 11px; height: 11px; border-radius: 50%; }
-  .dr { background: #ff5f57; } .dy { background: #ffbd2e; } .dg { background: #28ca42; }
-  .code-lang { margin-left: auto; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
-
-  .code-pre {
-    padding: 18px;
-    font-family: 'Courier New', monospace;
-    font-size: 12.5px;
-    line-height: 1.7;
-    color: #a8c4e0;
-    max-height: 380px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-    word-break: break-word;
-  }
-
-  .code-pre::-webkit-scrollbar { width: 5px; }
-  .code-pre::-webkit-scrollbar-track { background: transparent; }
-  .code-pre::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
-
-  /* Preview */
-  .preview-wrap { display: none; border: 1px solid var(--border); border-radius: 14px; overflow: hidden; margin-top: 16px; }
-  .preview-wrap.active { display: block; }
-  .preview-bar { background: var(--surface2); border-bottom: 1px solid var(--border); padding: 10px 16px; font-size: 12px; color: var(--muted); }
-  iframe { width: 100%; height: 580px; border: none; background: white; }
-
-  /* Error / Rate limit banner */
-  .alert {
-    border-radius: 12px; padding: 16px 18px;
-    font-size: 14px; line-height: 1.6;
-    margin-bottom: 20px; display: none;
-  }
-  .alert.active { display: block; }
-  .alert.error { background: rgba(224,112,112,0.1); border: 1px solid rgba(224,112,112,0.25); color: var(--red); }
-  .alert.warning { background: rgba(224,144,80,0.1); border: 1px solid rgba(224,144,80,0.25); color: var(--orange); }
-
-  /* Countdown */
-  .countdown { font-weight: 700; font-size: 15px; }
-
-  @keyframes fadeDown { from{opacity:0;transform:translateY(-18px)} to{opacity:1;transform:translateY(0)} }
-  @keyframes fadeUp   { from{opacity:0;transform:translateY(18px)}  to{opacity:1;transform:translateY(0)} }
+@media (max-width: 700px) {
+  .main { flex-direction: column; height: auto; }
+  .chat-panel { width: 100%; border-right: none; border-bottom: 1px solid var(--border); height: 60vh; }
+  .preview-panel { height: 60vh; }
+}
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- Header -->
-  <div class="header">
-    <div class="badge"><div class="badge-dot"></div>Claude AI · Ingyenes Sales Builder</div>
-    <h1>Sales Oldal <span>Generátor</span></h1>
-    <p class="subtitle">Írd le az ajánlatodat — Claude elkészíti a teljes HTML sales oldaladat.<br>Napi 3 generálás ingyenes, API kulcs nem szükséges.</p>
-  </div>
+<div class="header">
+  <div class="badge"><div class="badge-dot"></div>Claude AI · Sales Builder</div>
+  <h1>Sales Oldal <span>Generátor</span></h1>
+  <p class="subtitle">Írd le az ajánlatodat — Claude elkészíti és azonnal látod az előnézetet</p>
+</div>
 
-  <!-- Rate limit bar -->
-  <div class="rate-bar" id="rateBar">
-    <div class="rate-info">
-      <div class="rate-dots" id="rateDots">
-        <div class="rate-dot" id="rd0"></div>
-        <div class="rate-dot" id="rd1"></div>
-        <div class="rate-dot" id="rd2"></div>
+<div class="main">
+
+  <!-- CHAT -->
+  <div class="chat-panel">
+    <div class="chat-messages" id="chatMessages">
+      <div class="msg assistant">
+        <div class="msg-label">Claude</div>
+        <div class="msg-bubble">
+          Szia! 👋 Segítek elkészíteni a sales oldaladat.<br><br>
+          Mondd el mire van szükséged — pl. milyen terméket vagy szolgáltatást szeretnél eladni, kinek szól, és mi az ára. Én megírom a teljes HTML oldalt!
+        </div>
       </div>
-      <span class="rate-label">Napi generálás: <strong id="rateText">3 / 3 maradt</strong></span>
     </div>
-    <span style="font-size:12px; color:var(--muted)">Resetel 24 óránként 🔄</span>
-  </div>
 
-  <!-- Alert box -->
-  <div class="alert" id="alertBox"></div>
-
-  <!-- Form -->
-  <div class="card">
-    <div class="card-title">📋 Termék / Ajánlat Adatai</div>
-    <div class="form-grid">
-
-      <div class="form-group full">
-        <label>Termék / Szolgáltatás neve <span class="hint">(kötelező)</span></label>
-        <input type="text" id="productName" placeholder="pl. 7 Napos Ügyfélszerző Rendszer">
+    <div class="chat-input-area">
+      <div class="starter-btns" id="starterBtns">
+        <button class="starter-btn" onclick="useStarter(this)">📦 Digitális termék</button>
+        <button class="starter-btn" onclick="useStarter(this)">🎓 Online kurzus</button>
+        <button class="starter-btn" onclick="useStarter(this)">💼 Coaching program</button>
+        <button class="starter-btn" onclick="useStarter(this)">📋 Lead magnet oldal</button>
       </div>
-
-      <div class="form-group full">
-        <label>Célcsoport</label>
-        <input type="text" id="targetAudience" placeholder="pl. Magyar nőknek, akik online vállalkozást építenek">
+      <div class="input-row">
+        <textarea class="chat-textarea" id="chatInput" placeholder="Írd le mire van szükséged..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">➤</button>
       </div>
-
-      <div class="form-group full">
-        <label>Fő ígéret / Eredmény</label>
-        <textarea id="mainPromise" placeholder="pl. 7 nap alatt felépítesz egy automatizált rendszert, ami alvás közben is hoz ügyfeleket"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Fájdalompontok <span class="hint">(vesszővel)</span></label>
-        <textarea id="painPoints" placeholder="pl. Nincs elég ügyfél, Fárasztó a hideg megkeresés"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Előnyök / Mit kap a vásárló</label>
-        <textarea id="benefits" placeholder="pl. Kész email sablonok, Live coaching, Életen át hozzáférés"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Ár</label>
-        <input type="text" id="price" placeholder="pl. 49.000 Ft">
-      </div>
-
-      <div class="form-group">
-        <label>CTA gomb szövege</label>
-        <input type="text" id="ctaText" placeholder="pl. Belépek a programba →">
-      </div>
-
-      <div class="form-group">
-        <label>Dizájn stílus</label>
-        <select id="designStyle">
-          <option value="modern-dark">Modern Dark (erdőzöld + arany)</option>
-          <option value="elegant-light">Elegáns Light (krém + terrakotta)</option>
-          <option value="bold-contrast">Bold Contrast (fekete + neonzöld)</option>
-          <option value="luxury-gold">Luxury Gold (mélykék + arany)</option>
-          <option value="minimal-white">Minimal White (fehér + grafit)</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Sales oldal típusa</label>
-        <select id="pageType">
-          <option value="long-form">Long-form (teljes sales oldal)</option>
-          <option value="short-form">Short-form (VSL stílusú)</option>
-          <option value="webinar">Webinar regisztrációs oldal</option>
-          <option value="lead-magnet">Lead magnet letöltő oldal</option>
-        </select>
-      </div>
-
     </div>
   </div>
 
-  <!-- Generate button -->
-  <button class="btn-generate" id="genBtn" onclick="generate()">
-    ✨ Sales Oldal Generálása — Ingyenes
-  </button>
-
-  <!-- Loading -->
-  <div class="loading" id="loading">
-    <div class="spinner"></div>
-    <div class="loading-text">Claude megírja a sales oldaladat...</div>
-    <div class="steps">
-      <div class="step" id="s1"><div class="step-dot"></div>Ajánlat elemzése</div>
-      <div class="step" id="s2"><div class="step-dot"></div>Headline és hook megírása</div>
-      <div class="step" id="s3"><div class="step-dot"></div>Sales copy generálása</div>
-      <div class="step" id="s4"><div class="step-dot"></div>HTML és dizájn összeállítása</div>
-      <div class="step" id="s5"><div class="step-dot"></div>Végső simítások</div>
-    </div>
-  </div>
-
-  <!-- Result -->
-  <div class="result" id="result">
-    <div class="result-header">
-      <div class="result-title">✅ Kész a Sales Oldalad!</div>
-      <div class="result-actions">
-        <button class="btn-sm btn-copy" id="copyBtn" onclick="copyCode()">📋 Kód másolása</button>
-        <button class="btn-sm btn-preview" onclick="togglePreview()">👁 Előnézet</button>
-        <button class="btn-sm btn-reset" onclick="reset()">↩ Újra</button>
+  <!-- PREVIEW -->
+  <div class="preview-panel">
+    <div class="preview-topbar">
+      <div class="preview-title">👁 Élő előnézet</div>
+      <div class="preview-actions">
+        <button class="btn-copy-html" id="copyHtmlBtn" onclick="copyHtml()" style="display:none">📋 HTML másolása</button>
+        <button class="btn-clear" onclick="clearPreview()" style="display:none" id="clearBtn">🗑 Törlés</button>
       </div>
     </div>
-
-    <div class="code-box">
-      <div class="code-bar">
-        <div class="dot dr"></div><div class="dot dy"></div><div class="dot dg"></div>
-        <div class="code-lang">HTML</div>
+    <div class="preview-iframe-wrap">
+      <div class="preview-placeholder" id="placeholder">
+        <div class="preview-placeholder-icon">✨</div>
+        <div>Ide kerül a generált sales oldalad</div>
+        <div style="font-size:12px; opacity:0.6">Írd le az ajánlatodat a bal oldali chatben</div>
       </div>
-      <pre class="code-pre" id="codeOut"></pre>
-    </div>
-
-    <div class="preview-wrap" id="previewWrap">
-      <div class="preview-bar">👁 Élő előnézet</div>
       <iframe id="previewFrame"></iframe>
     </div>
   </div>
@@ -503,217 +351,185 @@
 </div>
 
 <script>
-  // ← Ezt az URL-t cseréld le a saját Netlify URL-edre deploy után
 const API_URL = 'https://prismatic-puppy-7ff440.netlify.app/.netlify/functions/generate';
-  const LIMIT = 3;
-  let generatedHtml = '';
-  let stepTimer = null;
-
-  // Rate limit tracking (localStorage-ban)
-  function getRateData() {
-    const dayMs = 24 * 60 * 60 * 1000;
-    let data = JSON.parse(localStorage.getItem('rl') || '{}');
-    if (!data.resetAt || Date.now() - data.resetAt > dayMs) {
-      data = { count: 0, resetAt: Date.now() };
-      localStorage.setItem('rl', JSON.stringify(data));
-    }
-    return data;
-  }
-
-  function useCredit() {
-    const data = getRateData();
-    data.count += 1;
-    localStorage.setItem('rl', JSON.stringify(data));
-    updateRateUI(LIMIT - data.count);
-  }
-
-  function updateRateUI(remaining) {
-    document.getElementById('rateText').textContent = `${remaining} / ${LIMIT} maradt`;
-    for (let i = 0; i < LIMIT; i++) {
-      const dot = document.getElementById('rd' + i);
-      if (dot) dot.classList.toggle('used', i >= remaining);
-    }
-  }
-
-  function getResetCountdown() {
-    const data = getRateData();
-    const resetInMs = (data.resetAt + 24 * 60 * 60 * 1000) - Date.now();
-    const h = Math.floor(resetInMs / 3600000);
-    const m = Math.ceil((resetInMs % 3600000) / 60000);
-    return `${h} óra ${m} perc`;
-  }
-
-  // Init
-  (function init() {
-    const data = getRateData();
-    updateRateUI(LIMIT - data.count);
-  })();
-
-  // Step animation
-  function startSteps() {
-    const ids = ['s1','s2','s3','s4','s5'];
-    let i = 0;
-    stepTimer = setInterval(() => {
-      if (i > 0) document.getElementById(ids[i-1]).className = 'step done';
-      if (i < ids.length) {
-        document.getElementById(ids[i]).className = 'step active';
-        i++;
-      }
-    }, 1700);
-  }
-
-  function clearSteps() {
-    clearInterval(stepTimer);
-    ['s1','s2','s3','s4','s5'].forEach(id => document.getElementById(id).className = 'step');
-  }
-
-  function showAlert(msg, type) {
-    const el = document.getElementById('alertBox');
-    el.className = `alert ${type} active`;
-    el.innerHTML = msg;
-  }
-
-  function hideAlert() {
-    document.getElementById('alertBox').className = 'alert';
-  }
-
-  async function generate() {
-    // Client-side rate check
-    const data = getRateData();
-    const remaining = LIMIT - data.count;
-    if (remaining <= 0) {
-      showAlert(`⏳ <strong>Napi limit elérve!</strong> Ma már nem tudsz több oldalt generálni. Próbáld újra <span class="countdown">${getResetCountdown()}</span> múlva.`, 'warning');
-      return;
-    }
-
-    const productName = document.getElementById('productName').value.trim();
-    if (!productName) { alert('Add meg a termék nevét!'); return; }
-
-    const targetAudience = document.getElementById('targetAudience').value.trim();
-    const mainPromise    = document.getElementById('mainPromise').value.trim();
-    const painPoints     = document.getElementById('painPoints').value.trim();
-    const benefits       = document.getElementById('benefits').value.trim();
-    const price          = document.getElementById('price').value.trim();
-    const ctaText        = document.getElementById('ctaText').value.trim() || 'Kérem a hozzáférést →';
-    const designStyle    = document.getElementById('designStyle').value;
-    const pageType       = document.getElementById('pageType').value;
-
-    const designs = {
-      'modern-dark':    'sötét háttér (#0d1a14), erdőzöld (#2d6a4f) és arany (#c9a96e) akcentusok, Playfair Display + DM Sans betűtípusok',
-      'elegant-light':  'krémfehér háttér (#faf7f2), terrakotta (#c4704f) és halvány arany, elegáns serif betűtípusok',
-      'bold-contrast':  'fekete háttér (#0a0a0a), élénk neonzöld (#00ff87) akcentusok, erős kontrasztok, modern sans-serif',
-      'luxury-gold':    'mélykék (#0a1628) háttér, arany (#d4a843) és krémfehér, luxus érzet, elegáns tipográfia',
-      'minimal-white':  'fehér háttér, grafit (#1a1a2e) szöveg, minimális dizájn, sok whitespace, clean sans-serif',
-    };
-
-    const pageTypes = {
-      'long-form':    'hosszú sales oldal (hero, fájdalompontok, megoldás, features, testimonials, garancia, CTA, FAQ)',
-      'short-form':   'rövid VSL stílusú oldal (headline, sub, video placeholder, bullet points, CTA)',
-      'webinar':      'webinar regisztrációs oldal (dátum/idő, előadó bemutatkozás, regisztrációs form)',
-      'lead-magnet':  'lead magnet letöltő oldal (ajánlat, mit kap, rövid form)',
-    };
-
-    const systemPrompt = `Te egy profi magyar sales oldal designer és copywriter vagy.
+const SYSTEM = `Te egy profi magyar sales oldal designer és copywriter vagy.
 HTML sales oldalakat készítesz egyetlen önálló HTML fájlként, inline CSS-sel és JS-sel.
 Szabályok:
 - Minden szöveg magyarul legyen
 - Teljes, önálló, production-ready HTML
-- Google Fonts CDN-ből
-- Scroll reveal animációk (IntersectionObserver), hover effektek
-- Mobilbarát, reszponzív
+- Google Fonts CDN-ből betöltve
+- Scroll reveal animációk (IntersectionObserver), hover effektek, sticky header
+- Mobilbarát, reszponzív design
 - Nincs külső CSS framework
-- CSAK a HTML kódot add vissza, semmi markdown blokk, semmi magyarázat`;
+- Persuasive sales copy, magyar piaci hangvételű
+- Adj hozzá kitalált de hihető testimonialokat
+- CSAK a HTML kódot add vissza, semmi magyarázat, semmi markdown blokk`;
 
-    const userPrompt = `Készíts egy ${pageTypes[pageType]} az alábbi adatok alapján:
+let conversationHistory = [];
+let currentHtml = '';
+let isLoading = false;
 
-TERMÉK: ${productName}
-CÉLCSOPORT: ${targetAudience || 'Magyar vállalkozók'}
-FŐ ÍGÉRET: ${mainPromise || 'Gyors és hatékony megoldás'}
-FÁJDALOMPONTOK: ${painPoints || 'Nem specifikált'}
-ELŐNYÖK: ${benefits || 'Nem specifikált'}
-ÁR: ${price || 'Kérésre megadható'}
-CTA SZÖVEG: ${ctaText}
-DIZÁJN: ${designs[designStyle]}
+function autoResize(el) {
+  el.style.height = 'auto';
+  el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+}
 
-Adj hozzá: sticky header, scroll animációk, kitalált de hihető testimonialok, garancia szekció. Sales copy legyen persuasive, magyar piaci hangvételű.
+function handleKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendMessage();
+  }
+}
 
-CSAK a teljes HTML kódot add vissza.`;
+function useStarter(btn) {
+  const starters = {
+    '📦 Digitális termék': 'Szeretnék egy sales oldalt egy digitális termékhez. Ez egy e-book csomag vállalkozó anyukáknak, ára 12.900 Ft. Segít abban, hogy otthonról is tudjon pénzt keresni.',
+    '🎓 Online kurzus': 'Csinálj egy sales oldalt egy online kurzushoz. A kurzus neve: "Közösségi Média Mester" - Instagram és Facebook marketing alapok kezdőknek. Ára: 49.000 Ft.',
+    '💼 Coaching program': 'Kell egy sales oldal egy 3 hónapos 1-1 coaching programhoz kisvállalkozóknak. Célja hogy 90 nap alatt stabilan 500.000 Ft felett legyen a bevételük. Ára: 150.000 Ft.',
+    '📋 Lead magnet oldal': 'Készíts egy lead magnet letöltő oldalt. Az ingyenes anyag neve: "7 bevált módszer hogy ügyfeleid legyenek hétvégén is" - PDF útmutató szolgáltatóknak.',
+  };
+  document.getElementById('chatInput').value = starters[btn.textContent] || '';
+  document.getElementById('starterBtns').style.display = 'none';
+  autoResize(document.getElementById('chatInput'));
+}
 
-    // UI: start loading
-    hideAlert();
-    document.getElementById('genBtn').disabled = true;
-    document.getElementById('result').classList.remove('active');
-    document.getElementById('loading').classList.add('active');
-    clearSteps();
-    startSteps();
+function addMessage(role, content, isHtml = false) {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = `msg ${role}`;
 
-    try {
-      const res = await fetch(API_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ systemPrompt, userPrompt }),
-      });
+  const label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = role === 'user' ? 'Te' : 'Claude';
 
-      const json = await res.json();
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble';
 
-      if (res.status === 429) {
-        showAlert(`⏳ <strong>Szerver oldali limit elérve.</strong> ${json.message}`, 'warning');
-        return;
-      }
-
-      if (!res.ok) throw new Error(json.error || 'Ismeretlen hiba');
-
-      generatedHtml = json.html;
-      useCredit(); // csak sikeres generálásnál
-
-      clearSteps();
-      ['s1','s2','s3','s4','s5'].forEach(id => document.getElementById(id).className = 'step done');
-
-      setTimeout(() => {
-        document.getElementById('loading').classList.remove('active');
-        document.getElementById('codeOut').textContent = generatedHtml;
-        document.getElementById('result').classList.add('active');
-        document.getElementById('genBtn').disabled = false;
-      }, 500);
-
-    } catch (err) {
-      clearSteps();
-      document.getElementById('loading').classList.remove('active');
-      document.getElementById('genBtn').disabled = false;
-      showAlert('❌ Hiba történt: ' + err.message, 'error');
-    }
+  if (isHtml) {
+    bubble.innerHTML = `✅ Elkészült a sales oldalad!<br><div class="html-ready" onclick="showInPreview()">👁 Megnézem az előnézetet</div>`;
+  } else {
+    bubble.textContent = content;
   }
 
-  function copyCode() {
-    navigator.clipboard.writeText(generatedHtml).then(() => {
-      const btn = document.getElementById('copyBtn');
-      btn.textContent = '✅ Másolva!';
-      btn.classList.add('ok');
-      setTimeout(() => {
-        btn.textContent = '📋 Kód másolása';
-        btn.classList.remove('ok');
-      }, 2500);
+  div.appendChild(label);
+  div.appendChild(bubble);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  return bubble;
+}
+
+function addLoadingMessage() {
+  const container = document.getElementById('chatMessages');
+  const div = document.createElement('div');
+  div.className = 'msg assistant';
+  div.id = 'loadingMsg';
+
+  const label = document.createElement('div');
+  label.className = 'msg-label';
+  label.textContent = 'Claude';
+
+  const bubble = document.createElement('div');
+  bubble.className = 'msg-bubble generating';
+  bubble.textContent = '⏳ Generálom a sales oldaladat...';
+
+  div.appendChild(label);
+  div.appendChild(bubble);
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+}
+
+function removeLoadingMessage() {
+  const el = document.getElementById('loadingMsg');
+  if (el) el.remove();
+}
+
+function showInPreview() {
+  if (!currentHtml) return;
+  const iframe = document.getElementById('previewFrame');
+  const placeholder = document.getElementById('placeholder');
+  const blob = new Blob([currentHtml], { type: 'text/html' });
+  iframe.src = URL.createObjectURL(blob);
+  iframe.style.display = 'block';
+  placeholder.style.display = 'none';
+  document.getElementById('copyHtmlBtn').style.display = 'inline-flex';
+  document.getElementById('clearBtn').style.display = 'inline-flex';
+  iframe.scrollIntoView({ behavior: 'smooth' });
+}
+
+function copyHtml() {
+  navigator.clipboard.writeText(currentHtml).then(() => {
+    const btn = document.getElementById('copyHtmlBtn');
+    btn.textContent = '✅ Másolva!';
+    btn.classList.add('ok');
+    setTimeout(() => {
+      btn.textContent = '📋 HTML másolása';
+      btn.classList.remove('ok');
+    }, 2500);
+  });
+}
+
+function clearPreview() {
+  document.getElementById('previewFrame').style.display = 'none';
+  document.getElementById('previewFrame').src = '';
+  document.getElementById('placeholder').style.display = 'flex';
+  document.getElementById('copyHtmlBtn').style.display = 'none';
+  document.getElementById('clearBtn').style.display = 'none';
+}
+
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('chatInput');
+  const text = input.value.trim();
+  if (!text) return;
+
+  isLoading = true;
+  document.getElementById('sendBtn').disabled = true;
+  document.getElementById('starterBtns').style.display = 'none';
+  input.value = '';
+  input.style.height = 'auto';
+
+  addMessage('user', text);
+  conversationHistory.push({ role: 'user', content: text });
+  addLoadingMessage();
+
+  try {
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        system: SYSTEM,
+        messages: conversationHistory,
+      }),
     });
-  }
 
-  function togglePreview() {
-    const wrap = document.getElementById('previewWrap');
-    const iframe = document.getElementById('previewFrame');
-    if (wrap.classList.toggle('active')) {
-      const blob = new Blob([generatedHtml], { type: 'text/html' });
-      iframe.src = URL.createObjectURL(blob);
-      wrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    } else {
-      iframe.src = '';
+    const data = await res.json();
+    removeLoadingMessage();
+
+    if (!res.ok) {
+      addMessage('assistant', '❌ Hiba: ' + (data.error || 'Ismeretlen hiba'));
+      return;
     }
-  }
 
-  function reset() {
-    document.getElementById('result').classList.remove('active');
-    document.getElementById('previewWrap').classList.remove('active');
-    generatedHtml = '';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    const reply = data.content[0].text;
+    conversationHistory.push({ role: 'assistant', content: reply });
+
+    // HTML-t tartalmaz?
+    if (reply.includes('<!DOCTYPE') || reply.includes('<html')) {
+      currentHtml = reply.replace(/^```html\n?/i, '').replace(/\n?```$/i, '').trim();
+      addMessage('assistant', '', true);
+      showInPreview();
+    } else {
+      addMessage('assistant', reply);
+    }
+
+  } catch(err) {
+    removeLoadingMessage();
+    addMessage('assistant', '❌ Hiba: ' + err.message);
+  } finally {
+    isLoading = false;
+    document.getElementById('sendBtn').disabled = false;
   }
+}
 </script>
 </body>
 </html>
