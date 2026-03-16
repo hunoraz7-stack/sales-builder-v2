@@ -32,7 +32,11 @@ exports.handler = async (event) => {
     });
 
     const text = await response.text();
-    return { statusCode: response.status, headers, body: text };
+let parsed;
+try { parsed = JSON.parse(text); } catch(e) {
+  return { statusCode: 500, headers, body: JSON.stringify({ error: 'API parse error: ' + text.substring(0, 300) }) };
+}
+return { statusCode: response.status, headers, body: JSON.stringify(parsed) };
 
   } catch(err) {
     return { statusCode: 500, headers, body: JSON.stringify({ error: err.message }) };
